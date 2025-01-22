@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:intl/intl.dart';
-import 'package:myapp/models/employee_model.dart';
+import 'package:myapp/models/employee_model.dart' as model;
 import 'package:myapp/services/db_helper.dart';
 import 'package:myapp/widgets/custom_app_bar.dart';
 
@@ -20,12 +20,11 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
 
   String _transactionType = 'Given';
   String? _selectedEmployee;
-  int? _selectedEmployeeId;
+  String? _selectedEmployeeId;
   DateTime _selectedDate = DateTime.now();
-  // List<Map<String, dynamic>> _employees = []; // Initially empty
   bool _isLoading = true; // To track loading state
   final DBHelper _dbHelper = DBHelper.instance;
-  List<Employee> _employees = [];
+  List<model.Employee> _employees = [];
 
   @override
   void initState() {
@@ -42,36 +41,29 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
   }
 
   /// Fetch employees from the database
-    Future<void> _fetchEmployees() async {
+  Future<void> _fetchEmployees() async {
+  final stopwatch = Stopwatch()..start(); // Start measuring time
+  try {
     final employees = await _dbHelper.getEmployees();
+    debugPrint('Query Time: ${stopwatch.elapsedMilliseconds} ms'); // Log query time
     setState(() {
       _employees = employees;
     });
+  } catch (e) {
+    debugPrint('Error fetching employees: $e');
+  } finally {
+    setState(() {
+      _isLoading = false;
+    });
+    stopwatch.stop();
   }
-  // Future<void> _fetchEmployees() async {
-  //   try {
-  //     // Simulate a database fetch with a delay (replace with actual DB call)
-  //     await Future.delayed(const Duration(seconds: 2));
-  //     // Assume this is the data fetched from your database
-  //     final fetchedEmployees = [
-  //       {'id': 1, 'name': 'John Doe'},
-  //       {'id': 2, 'name': 'Jane Smith'},
-  //       {'id': 3, 'name': 'Alice Johnson'},
-  //       {'id': 4, 'name': 'Bob Brown'},
-  //     ];
+}
 
-  //     setState(() {
-  //       _employees = fetchedEmployees;
-  //       _isLoading = false; // Stop loading
-  //     });
-  //   } catch (e) {
-  //     setState(() {
-  //       _isLoading = false;
-  //     });
-  //     ScaffoldMessenger.of(context).showSnackBar(
-  //       SnackBar(content: Text('Failed to fetch employees: $e')),
-  //     );
-  //   }
+  // Future<void> _fetchEmployees() async {
+  //   final employees = await _dbHelper.getEmployees();
+  //   setState(() {
+  //     _employees = employees;
+  //   });
   // }
 
   Future<void> _selectDate(BuildContext context) async {
@@ -126,7 +118,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                             .map(
                               (type) => DropdownMenuItem(
                                 value: type,
-                                child: Text(type),
+                                child: Text(type, style: const TextStyle(fontSize: 16),),
                               ),
                             )
                             .toList(),
@@ -137,6 +129,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                         },
                         decoration: const InputDecoration(
                           labelText: 'Transaction Type',
+                          labelStyle: TextStyle(fontSize: 14),
                           border: OutlineInputBorder(),
                         ),
                       ),
@@ -148,14 +141,15 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                           isExpanded: true,
                           hint: const Text(
                             'Select Employee',
-                            style: TextStyle(fontSize: 14),
+                            style: TextStyle(color: Colors.black,fontSize: 16),
                           ),
+                          
                           items: _employees
                               .map((employee) => DropdownMenuItem<String>(
-                                    value: employee['name'],
+                                    value: employee.name,
                                     child: Text(
-                                      employee['name'],
-                                      style: const TextStyle(fontSize: 14),
+                                      employee.name,
+                                      style: const TextStyle(fontSize: 16),
                                     ),
                                   ))
                               .toList(),
@@ -164,14 +158,18 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                             setState(() {
                               _selectedEmployee = value;
                               _selectedEmployeeId = _employees.firstWhere(
-                                (e) => e['name'] == value,
-                              )['id'];
+                                (e) => e.name == value,
+                              ).id.toString();
                             });
                           },
-                          buttonStyleData: const ButtonStyleData(
-                            padding: EdgeInsets.symmetric(horizontal: 16),
-                            height: 40,
+                          buttonStyleData: ButtonStyleData(
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            height: 55,
                             width: double.infinity,
+                            decoration: BoxDecoration(
+                              border: Border.all(color: Colors.black),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
                           ),
                           dropdownStyleData: const DropdownStyleData(
                             maxHeight: 200,
@@ -277,4 +275,11 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
       ),
     );
   }
+}
+
+class Employee {
+  final String id;
+  final String name;
+
+  Employee({required this.id, required this.name});
 }

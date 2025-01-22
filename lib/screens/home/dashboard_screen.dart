@@ -80,7 +80,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         child: Row(
           children: [
             CircleAvatar(
-              backgroundColor: color.withOpacity(0.2),
+              backgroundColor: color.withAlpha(50),
               child: Icon(icon, color: color),
             ),
             const SizedBox(width: 16.0),

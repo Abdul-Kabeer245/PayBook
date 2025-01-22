@@ -1,6 +1,6 @@
 import 'dart:core';
 import 'package:flutter/material.dart';
-import 'package:myapp/models/employee_model.dart';
+import 'package:myapp/models/employee_model.dart' as employee_model;
 import 'package:myapp/models/transaction_model.dart';
 import 'package:myapp/screens/transactions/add_transaction_screen.dart';
 import 'package:myapp/screens/transactions/transaction_screen.dart';
@@ -20,7 +20,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   // Dummy data  late List<Transaction> transactions;
-  List<Employee> employees = [];
+  List<employee_model.Employee> employees = [];
   List<Transaction> transactions = [];
 
   @override
