@@ -2,13 +2,14 @@ import 'dart:core';
 import 'package:flutter/material.dart';
 import 'package:myapp/models/employee_model.dart';
 import 'package:myapp/models/transaction_model.dart';
+import 'package:myapp/screens/transactions/add_transaction_screen.dart';
 import 'package:myapp/screens/transactions/transaction_screen.dart';
 import '../../widgets/custom_app_bar.dart';
 import '../employees/employee_screen.dart';
 import '../../constant/app_colors.dart';
-import '../transactions/add_transaction_screen.dart';
 import '../settings/settings_screen.dart';
 import 'dashboard_screen.dart';
+import 'package:myapp/services/db_helper.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -18,50 +19,40 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  // Dummy data
-  late List<Transaction> transactions;
-  late List<Employee> employees;
+  // Dummy data  late List<Transaction> transactions;
+  List<Employee> employees = [];
+  List<Transaction> transactions = [];
 
   @override
   void initState() {
     super.initState();
+    // Fetch employees and transactions from DBHelper
 
-    // Initialize transactions
-    transactions = [
-      Transaction(
-        id: 1,
-        employeeid: 1,
-        type: 'Expense',
-        amount: 100.0,
-        description: 'Office Supplies',
-        date: DateTime.now(),
-      ),
-      Transaction(
-        id: 2,
-        employeeid: 1,
-        type: 'Income',
-        amount: 200.0,
-        description: 'Project Payment',
-        date: DateTime.now(),
-      ),
-      Transaction(
-        id: 3,
-        employeeid: 2,
-        type: 'Expense',
-        amount: 150.0,
-        description: 'Travel',
-        date: DateTime.now(),
-      ),
-    ];
-
-    // Initialize employees
-    employees = [
-      Employee(name: 'John Doe', phone: '1234567890', email: 'johndoe@example.com', id: 1),
-      Employee(name: 'Jane Smith', phone: '9876543210', email: 'janesmith@example.com', id: 2),
-    ];
+    _loadData();
   }
 
-  int _currentIndex = 0;
+  // Method to fetch data from DBHelper
+  Future<void> _loadData() async {
+    final dbHelper = DBHelper.instance;
+
+    // Fetch employees and transactions from the database
+    final employeeList = await dbHelper.getEmployees();
+    final transactionList = await dbHelper.getTransactions();
+    
+    print('Employees: $employeeList');
+    print('Transactions: $transactionList'); 
+    
+    setState(() {
+      employees = employeeList; // Assign to the employees list
+      transactions = transactionList; // Assign to the transactions list
+    });
+      print('Employees length: ${employees.length}'); // Log the employee list
+  print('Transactions length: ${transactions.length}'); // Log the transaction list
+  print('employees: $employees');
+  print('transactions: $transactions');
+  }
+
+  int currentIndex = 0;
 
   @override
   Widget build(BuildContext context) {
@@ -69,7 +60,8 @@ class _HomeScreenState extends State<HomeScreen> {
     final List<Map<String, dynamic>> screens = [
       {
         'title': 'Dashboard',
-        'screen': DashboardScreen(employees: employees, transactions: transactions),
+        'screen':
+            DashboardScreen(employees: employees, transactions: transactions),
       },
       {
         'title': 'Employees',
@@ -87,7 +79,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return Scaffold(
       appBar: CustomAppBar(
-        title: screens[_currentIndex]['title'],
+        title: screens[currentIndex]['title'],
         showBackButton: false,
         actions: [
           IconButton(
@@ -96,18 +88,19 @@ class _HomeScreenState extends State<HomeScreen> {
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const AddTransactionScreen()),
+                MaterialPageRoute(
+                    builder: (context) => const AddTransactionScreen()),
               );
             },
           ),
         ],
       ),
-      body: screens[_currentIndex]['screen'],
+      body: screens[currentIndex]['screen'],
       bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _currentIndex,
+        currentIndex: currentIndex,
         onTap: (index) {
           setState(() {
-            _currentIndex = index;
+            currentIndex = index;
           });
         },
         items: const [

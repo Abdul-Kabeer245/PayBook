@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../models/transaction_model.dart';
 import '../../services/db_helper.dart';
-import 'add_transaction_screen.dart';
+import 'package:myapp/screens/transactions/add_transaction_screen.dart';
 
 
 class TransactionsScreen extends StatefulWidget {
